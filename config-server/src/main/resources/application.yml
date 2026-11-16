@@ -1,0 +1,44 @@
+server:
+  port: 8888
+
+spring:
+  application:
+    name: config-server
+  profiles:
+    # "native" : fichiers lus depuis le dossier config/ du classpath (fonctionne hors ligne)
+    # "git"    : fichiers lus depuis un dépôt GitHub (lancer avec --spring.profiles.active=git)
+    active: native
+  cloud:
+    config:
+      server:
+        native:
+          search-locations: classpath:/config
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+---
+# Profil "git" : configuration externalisée sur GitHub.
+# Les mêmes fichiers que src/main/resources/config sont publiés dans le dépôt public driveeasy-config.
+# Lancement : java -jar config-server/target/config-server-1.0.0.jar --spring.profiles.active=git
+spring:
+  config:
+    activate:
+      on-profile: git
+  cloud:
+    config:
+      server:
+        git:
+          uri: ${CONFIG_GIT_URI:https://github.com/mohamedbenhassin-design/driveeasy-config}
+          default-label: main
+          clone-on-start: true

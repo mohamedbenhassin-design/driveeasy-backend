@@ -1,0 +1,13 @@
+# Infrastructure Docker du projet DriveEasy.
+# Pas de base de données : les microservices stockent leurs données en mémoire (RAM),
+# conformément au cahier des charges. Seul Zipkin est conteneurisé.
+#
+# Lancement : docker compose up -d
+# Interface  : http://localhost:9411
+services:
+  zipkin:
+    image: openzipkin/zipkin:latest
+    container_name: driveeasy-zipkin
+    ports:
+      - "9411:9411"
+    restart: unless-stopped

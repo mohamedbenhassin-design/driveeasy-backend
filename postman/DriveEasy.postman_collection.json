@@ -1,0 +1,126 @@
+{
+  "info": {
+    "name": "DriveEasy - API Gateway",
+    "description": "Tests de l'API DriveEasy via la gateway (port 8080). Lancer les requêtes dans l'ordre : la création enregistre l'id de la location dans la variable {{locationId}}.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080/api" },
+    { "key": "locationId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "01 - Liste des véhicules (200)",
+      "request": { "method": "GET", "url": "{{baseUrl}}/vehicules" }
+    },
+    {
+      "name": "02 - Véhicules SUV diesel (200, filtres)",
+      "request": { "method": "GET", "url": "{{baseUrl}}/vehicules?categorie=SUV&carburant=DIESEL" }
+    },
+    {
+      "name": "03 - Véhicule introuvable (404)",
+      "request": { "method": "GET", "url": "{{baseUrl}}/vehicules/99" }
+    },
+    {
+      "name": "04 - Véhicule invalide (400 validation)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/vehicules",
+        "body": { "mode": "raw", "raw": "{\n  \"immatriculation\": \"\",\n  \"marque\": \"Kia\",\n  \"modele\": \"Picanto\",\n  \"annee\": 2023,\n  \"carburant\": \"ESSENCE\",\n  \"boite\": \"MANUELLE\",\n  \"categorie\": \"ECONOMIQUE\",\n  \"nbPlaces\": 4,\n  \"kilometrage\": 1000,\n  \"prixJournalier\": -5\n}" }
+      }
+    },
+    {
+      "name": "05 - Immatriculation existante (409)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/vehicules",
+        "body": { "mode": "raw", "raw": "{\n  \"immatriculation\": \"123 TU 4567\",\n  \"marque\": \"Kia\",\n  \"modele\": \"Picanto\",\n  \"annee\": 2023,\n  \"carburant\": \"ESSENCE\",\n  \"boite\": \"MANUELLE\",\n  \"categorie\": \"ECONOMIQUE\",\n  \"nbPlaces\": 4,\n  \"kilometrage\": 1000,\n  \"prixJournalier\": 70\n}" }
+      }
+    },
+    {
+      "name": "06 - Éligibilité client mineur (200, eligible=false)",
+      "request": { "method": "GET", "url": "{{baseUrl}}/clients/4/eligibilite" }
+    },
+    {
+      "name": "07 - Simulation du prix (200)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/locations/simulation",
+        "body": { "mode": "raw", "raw": "{\n  \"clientId\": 3,\n  \"vehiculeId\": 2,\n  \"dateDebut\": \"2026-12-01\",\n  \"dateFinPrevue\": \"2026-12-04\"\n}" }
+      }
+    },
+    {
+      "name": "08 - Créer une réservation (201)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('201 Created', () => pm.response.to.have.status(201));",
+              "if (pm.response.code === 201) {",
+              "  pm.collectionVariables.set('locationId', pm.response.json().id);",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/locations",
+        "body": { "mode": "raw", "raw": "{\n  \"clientId\": 3,\n  \"vehiculeId\": 2,\n  \"dateDebut\": \"2026-12-01\",\n  \"dateFinPrevue\": \"2026-12-04\"\n}" }
+      }
+    },
+    {
+      "name": "09 - Même réservation encore (409 chevauchement)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/locations",
+        "body": { "mode": "raw", "raw": "{\n  \"clientId\": 2,\n  \"vehiculeId\": 2,\n  \"dateDebut\": \"2026-12-02\",\n  \"dateFinPrevue\": \"2026-12-05\"\n}" }
+      }
+    },
+    {
+      "name": "10 - Client au permis expiré (400)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/locations",
+        "body": { "mode": "raw", "raw": "{\n  \"clientId\": 5,\n  \"vehiculeId\": 1,\n  \"dateDebut\": \"2026-12-01\",\n  \"dateFinPrevue\": \"2026-12-04\"\n}" }
+      }
+    },
+    {
+      "name": "11 - Départ (200, véhicule LOUE)",
+      "request": { "method": "PATCH", "url": "{{baseUrl}}/locations/{{locationId}}/depart" }
+    },
+    {
+      "name": "12 - Retour avec 2 jours de retard (200, pénalité)",
+      "request": {
+        "method": "PATCH",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/locations/{{locationId}}/retour",
+        "body": { "mode": "raw", "raw": "{\n  \"kmRetour\": 18500,\n  \"dateRetourEffectif\": \"2026-12-06\"\n}" }
+      }
+    },
+    {
+      "name": "13 - Détail enrichi de la location (200)",
+      "request": { "method": "GET", "url": "{{baseUrl}}/locations/{{locationId}}" }
+    },
+    {
+      "name": "14 - Supprimer un véhicule loué (409)",
+      "request": { "method": "DELETE", "url": "{{baseUrl}}/vehicules/3" }
+    },
+    {
+      "name": "15 - Statistiques (200)",
+      "request": { "method": "GET", "url": "{{baseUrl}}/locations/statistiques" }
+    },
+    {
+      "name": "16 - Liste paginée des locations terminées (200)",
+      "request": { "method": "GET", "url": "{{baseUrl}}/locations?statut=TERMINEE&page=0&size=5" }
+    }
+  ]
+}

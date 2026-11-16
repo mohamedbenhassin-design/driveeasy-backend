@@ -1,0 +1,12 @@
+package tn.sesame.driveeasy.client;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+/** Microservice de gestion des clients (port 8082). */
+@SpringBootApplication
+public class ClientServiceApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(ClientServiceApplication.class, args);
+    }
+}
