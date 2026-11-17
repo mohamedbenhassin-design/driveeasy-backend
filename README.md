@@ -183,4 +183,25 @@ Tests unitaires de la tarification : `location-service/src/test/.../Tarification
 
 ## Captures d'écran
 
-_À ajouter : tableau de bord Eureka, requêtes Postman, traces Zipkin._
+### Tableau de bord Eureka : les 5 instances sont UP
+![Eureka](docs/captures/eureka.png)
+
+### Config Server (profil `git`) : configuration lue depuis le dépôt GitHub driveeasy-config
+![Config Server](docs/captures/config-server-git.png)
+
+### Trace Zipkin : gateway → location-service → client-service + vehicule-service
+![Zipkin](docs/captures/zipkin-trace.png)
+
+### Postman : en-têtes ajoutés par le filtre de la gateway (`X-Request-Id`, `X-Response-Time`)
+![Headers](docs/captures/postman-headers-gateway.png)
+
+### Postman : création d'une réservation (201)
+![201](docs/captures/postman-201-reservation.png)
+
+### Postman : erreur de validation (400)
+![400](docs/captures/postman-400-validation.png)
+
+### Postman : retour avec 2 jours de retard (pénalité de 285 DT)
+![Retour](docs/captures/postman-retour-penalite.png)
+
+Une collection Postman prête à importer est fournie : `postman/DriveEasy.postman_collection.json` (16 requêtes).

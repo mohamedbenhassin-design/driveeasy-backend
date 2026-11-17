@@ -5,6 +5,18 @@
 $ErrorActionPreference = "Stop"
 Set-Location $PSScriptRoot
 
+# Utilise un JDK 21 même si le "java" par défaut du PATH est plus ancien
+$jdk21 = Get-ChildItem -Directory -ErrorAction SilentlyContinue `
+    "$env:ProgramFiles\Microsoft\jdk-21*", "$env:ProgramFiles\Eclipse Adoptium\jdk-21*", "$env:ProgramFiles\Java\jdk-21*" |
+    Select-Object -First 1
+if ($jdk21) {
+    $env:JAVA_HOME = $jdk21.FullName
+    $env:Path = "$($jdk21.FullName)\bin;$env:Path"
+    Write-Host "JDK utilisé : $($jdk21.FullName)" -ForegroundColor DarkGray
+} else {
+    Write-Host "Attention : JDK 21 introuvable, utilisation du java du PATH" -ForegroundColor Yellow
+}
+
 Write-Host "1/4 Compilation (mvn clean package)..." -ForegroundColor Cyan
 mvn -q clean package -DskipTests
 if ($LASTEXITCODE -ne 0) { throw "Echec de la compilation" }
